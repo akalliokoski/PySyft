@@ -1,0 +1,5 @@
+fields:
+  age:
+    faker: [random_int, 0, 100]
+  married:
+    faker: [pybool]
