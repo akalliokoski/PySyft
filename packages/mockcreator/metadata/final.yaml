@@ -1,0 +1,33 @@
+fields:
+  id:
+    faker.unique: pyint
+    min_value: 0
+    max_value: 1000
+  name:
+    faker: first_name
+  age:
+    faker: pyint
+    min_value: 25
+    max_value: 45
+  is_student:
+    random: choices
+    args:
+    - - true
+      - false
+    weights:
+    - 0.6
+    - 0.4
+  favorite_color:
+    random: choices
+    args:
+    - - red
+      - blue
+      - green
+    weights:
+    - 0.4
+    - 0.4
+    - 0.2
+  height:
+    random: gauss
+    mu: 170
+    sigma: 8

@@ -1,8 +1,0 @@
-fields:
-  age:
-    faker: pyint
-    args: [0, 100]
-  age2:
-    faker: pyint
-    min_value: 0
-    max_value: 100
