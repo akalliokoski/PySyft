@@ -63,6 +63,14 @@ class RandomCreator(Creator):
             return [None] * num_samples
 
         args = params.pop("args", [])
-        field = RANDOM_METHODS_FIELD_MAP[method_name]
-        kwargs = field.get_kwargs(num_samples, **params)
-        return getattr(random, method_name)(*args, **kwargs)
+        field = RANDOM_METHODS_FIELD_MAP.get(method_name)
+
+        if field:
+            kwargs = field.get_kwargs(num_samples, **params)
+            data = getattr(random, method_name)(*args, **kwargs)
+        else:
+            data = [
+                getattr(random, method_name)(*args, **params)
+                for _ in range(num_samples)
+            ]
+        return data

@@ -29,3 +29,7 @@ fields:
     - 0.4
     - 0.4
     - 0.2
+  height:
+    faker: pyint
+    min_value: 162
+    max_value: 180
