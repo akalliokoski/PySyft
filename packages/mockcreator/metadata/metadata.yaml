@@ -1,5 +1,8 @@
 fields:
   age:
-    faker: [random_int, 0, 100]
-  married:
-    faker: [pybool]
+    faker: pyint
+    args: [0, 100]
+  age2:
+    faker: pyint
+    min_value: 0
+    max_value: 100

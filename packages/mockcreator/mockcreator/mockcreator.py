@@ -1,7 +1,9 @@
+from typing import Any, Dict, List, Union
+import copy
+
 from faker import Faker
 import pandas as pd
 import yaml
-from typing import Any, Dict, List, Union
 
 # relative
 from fields import Field, IntegerField, FloatField, BooleanField
@@ -26,16 +28,17 @@ class MockCreator:
             yaml.dump(self.metadata, f)
 
     def generate_data(self, num_samples: int) -> pd.DataFrame:
-        data: List[Dict[str, Any]] = []
+        data = []
         for _ in range(num_samples):
-            sample: Dict[str, Any] = {}
-            for feature_name, feature_params in self.metadata["fields"].items():
-                faker_method = feature_params.get("faker")
-                if faker_method:
-                    faker_method_name, *faker_params = faker_method
-                    value = getattr(fake, faker_method_name)(*faker_params)
-                else:
-                    value = None
+            sample = {}
+            for feature_name, params in self.metadata["fields"].items():
+                params = copy.deepcopy(params)
+                faker_method_name = params.pop("faker", None)
+                if faker_method_name is None:
+                    continue
+
+                args = params.pop("args", [])
+                value = getattr(fake, faker_method_name)(*args, **params)
                 sample[feature_name] = value
             data.append(sample)
 
