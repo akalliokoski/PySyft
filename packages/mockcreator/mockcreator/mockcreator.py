@@ -1,22 +1,29 @@
-from typing import Any, Dict, List, Union
-import copy
+# stdlib
+from collections import OrderedDict
+from typing import Any, Dict
 
-from faker import Faker
+# third party
 import pandas as pd
 import yaml
 
 # relative
-from fields import Field, IntegerField, FloatField, BooleanField
+from creator import Creator
+from faker_creator import FakerCreator
+from random_creator import RandomCreator
 
 
-fake = Faker()
-
-PANDAS_FIELD_TYPE_MAP = {
-    "int64": IntegerField,
-    "float64": FloatField,
-    "bool": BooleanField,
-    "object": Field,
+CREATOR_MAP: Dict[str, Creator] = {
+    "faker": FakerCreator(),
+    "faker.unique": FakerCreator(),
+    "random": RandomCreator(),
 }
+
+
+def _get_creator(creator_name: str) -> Creator:
+    creator = CREATOR_MAP.get(creator_name, None)
+    if creator is None:
+        raise ValueError(f"Creator {creator_name} not found")
+    return creator
 
 
 class MockCreator:
@@ -25,27 +32,39 @@ class MockCreator:
 
     def to_yaml(self, path: str) -> None:
         with open(path, "w") as f:
-            yaml.dump(self.metadata, f)
+            yaml.dump(self.metadata, f, sort_keys=False)
+
+    def set_metadata(self, field: str, metadata: Dict[str, Any]) -> None:
+        self.metadata["fields"][field] = metadata
 
     def generate_data(self, num_samples: int) -> pd.DataFrame:
-        data = []
-        for _ in range(num_samples):
-            sample = {}
-            for feature_name, params in self.metadata["fields"].items():
-                params = copy.deepcopy(params)
-                faker_method_name = params.pop("faker", None)
-                if faker_method_name is None:
-                    continue
+        data = {}
+        for feature_name, params in self.metadata["fields"].items():
+            ordered_params = OrderedDict(params)
+            creator_name, method_name = ordered_params.popitem(0)
 
-                args = params.pop("args", [])
-                value = getattr(fake, faker_method_name)(*args, **params)
-                sample[feature_name] = value
-            data.append(sample)
-
+            creator = _get_creator(creator_name)
+            feature = creator.generate_data(method_name, ordered_params, num_samples)
+            data[feature_name] = feature
         return pd.DataFrame(data)
 
     @classmethod
     def from_yaml(cls, path: str) -> "MockCreator":
         with open(path, "r") as f:
             metadata = yaml.safe_load(f)
+        return cls(metadata)
+
+    @classmethod
+    def from_dataframe(
+        cls, df: pd.DataFrame, series_creators: Dict[str, str]
+    ) -> "MockCreator":
+        metadata = {
+            "fields": {},
+        }
+        for column_name, series in df.iteritems():
+            creator_name = series_creators.get(column_name, "faker")
+            creator = _get_creator(creator_name)
+            inferred = creator.infer_metadata(series)
+            metadata["fields"][column_name] = inferred
+
         return cls(metadata)
