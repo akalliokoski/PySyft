@@ -1,0 +1,75 @@
+tables:
+  people:
+    fields:
+      id:
+        faker: pyint
+        min_value: 1
+        max_value: 5
+      name:
+        faker: pystr
+        min_chars: 3
+        max_chars: 7
+      age:
+        faker: pyint
+        min_value: 25
+        max_value: 45
+      is_student:
+        random: choices
+        args:
+        - - true
+          - false
+        weights:
+        - 0.6
+        - 0.4
+      favorite_color:
+        random: choices
+        args:
+        - - red
+          - blue
+          - green
+        weights:
+        - 0.4
+        - 0.4
+        - 0.2
+      height:
+        faker: pyint
+        min_value: 162
+        max_value: 180
+      ssn:
+        faker: pystr
+        min_chars: 11
+        max_chars: 11
+  conditions:
+    fields:
+      id:
+        faker: pyint
+        min_value: 6
+        max_value: 10
+      condition:
+        random: choices
+        args:
+        - - Heart Disease
+          - Diabetes
+          - High Blood Pressure
+          - Asthma
+          - Obesity
+        weights:
+        - 0.2
+        - 0.2
+        - 0.2
+        - 0.2
+        - 0.2
+      severity:
+        random: choices
+        args:
+        - - Moderate
+          - Severe
+          - Mild
+        weights:
+        - 0.4
+        - 0.4
+        - 0.2
+      ssn:
+        faker: pystr
+        min_chars: 6
+        max_chars: 11
