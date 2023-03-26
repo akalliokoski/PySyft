@@ -7,13 +7,15 @@ This subpackage provides functionality for generating mock data using the Python
   * required for proper multi-table support
     * the order of fields should be determined by the relations
   * currently generated table by table
-* use mypy
 * more features for multi-table support
   * proper fuzzy and non-matching value generation (metadata support?)
   * ?
+* support specifying relationships between features 
+  * plaitpy has "lambda" support
 * better inferring support
   * distributions, default inferring, etc.?
 * how to integrate with pysyft?
+* use mypy
 * tests
 
 
