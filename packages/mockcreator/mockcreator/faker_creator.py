@@ -1,12 +1,12 @@
 # stdlib
-from typing import Any, Dict, List
+from typing import Any
+from typing import Dict
+from typing import List
 
 # third party
+from creator import Creator
 from faker import Faker
 import pandas as pd
-
-# relative
-from creator import Creator
 
 fake = Faker()
 
@@ -81,8 +81,10 @@ PANDAS_FIELD_MAP = {
 
 
 class FakerCreator(Creator):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(
+        self, metadata: Dict[str, Any] = None, generated: List[pd.DataFrame] = None
+    ) -> None:
+        super().__init__(metadata=metadata, generated=generated)
 
     def infer_metadata(self, series: pd.Series) -> Field:
         field_type = PANDAS_FIELD_MAP.get(series.dtype.name, Field)
@@ -101,6 +103,7 @@ class FakerCreator(Creator):
 
         args = params.pop("args", [])
         kwargs = params
+
         return list(
             [
                 getattr(fake_obj, method_name)(*args, **kwargs)

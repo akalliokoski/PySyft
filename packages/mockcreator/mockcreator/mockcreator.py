@@ -1,21 +1,22 @@
 # stdlib
 from collections import OrderedDict
-from typing import Any, Dict, List
+from typing import Any
+from typing import Dict
+from typing import List
 
 # third party
-import pandas as pd
-import yaml
-
-# relative
 from creator import Creator
 from faker_creator import FakerCreator
+import pandas as pd
 from random_creator import RandomCreator
-
+from relation_creator import RelationCreator
+import yaml
 
 CREATOR_MAP: Dict[str, Creator] = {
-    "faker": FakerCreator(),
-    "faker.unique": FakerCreator(),
-    "random": RandomCreator(),
+    "faker": FakerCreator,
+    "faker.unique": FakerCreator,
+    "random": RandomCreator,
+    "relation": RelationCreator,
 }
 
 
@@ -35,7 +36,7 @@ def _dataframe_metadata(
     creators = hints.get("creators", {})
     for column_name, series in df.iteritems():
         creator_name = creators.get(column_name, "faker")
-        creator = _get_creator(creator_name)
+        creator = _get_creator(creator_name)()
         inferred = creator.infer_metadata(series)
         metadata["fields"][column_name] = inferred
 
@@ -43,37 +44,38 @@ def _dataframe_metadata(
     return (name, metadata)
 
 
-def _generate_table_data(metadata: Dict[str, Any], num_samples: int) -> pd.DataFrame:
-    data = {}
-    for feature_name, params in metadata["fields"].items():
-        ordered_params = OrderedDict(params)  ## TODO: is OrderedDict required?
-        creator_name, method_name = ordered_params.popitem(0)
-
-        creator = _get_creator(creator_name)
-        feature = creator.generate_data(method_name, ordered_params, num_samples)
-        data[feature_name] = feature
-    return pd.DataFrame(data)
-
-
 class MockCreator:
     def __init__(self, metadata: Dict[str, Any]) -> None:
         self.metadata = metadata
+        self.generated: List[pd.DataFrame] = []
+
+    def _generate_table_data(
+        self, metadata: Dict[str, Any], num_samples: int
+    ) -> pd.DataFrame:
+        data = {}
+        for feature_name, params in metadata["fields"].items():
+            ordered_params = OrderedDict(params)
+            creator_name, method_name = ordered_params.popitem(0)
+
+            creator = _get_creator(creator_name)(self.metadata, self.generated)
+            feature = creator.generate_data(method_name, ordered_params, num_samples)
+            data[feature_name] = feature
+        return pd.DataFrame(data)
 
     def to_yaml(self, path: str) -> None:
         with open(path, "w") as f:
             yaml.dump(self.metadata, f, sort_keys=False)
 
     def set_field(self, table: str, field: str, metadata: Dict[str, Any]) -> None:
-        tables = self.metadata.get("tables", {})
-        fields = self.metadata.get(table, {"fields": {}})
-        fields[field] = metadata
-        self.metadata["tables"] = tables
+        self.metadata["tables"][table]["fields"][field] = metadata
 
     def generate_data(self, num_samples: int) -> List[pd.DataFrame]:
-        dfs: List[pd.DataFrame] = []
+        self.generated = []
         for _, table_metadata in self.metadata["tables"].items():
-            dfs.append(_generate_table_data(table_metadata, num_samples))
-        return dfs
+            self.generated.append(
+                self._generate_table_data(table_metadata, num_samples)
+            )
+        return self.generated
 
     @classmethod
     def from_yaml(cls, path: str) -> "MockCreator":

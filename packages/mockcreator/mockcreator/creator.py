@@ -1,13 +1,18 @@
 # stdlib
-from typing import Any, Dict, List
+from typing import Any
+from typing import Dict
+from typing import List
 
 # third party
 import pandas as pd
 
 
 class Creator:
-    def __init__(self) -> None:
-        pass
+    def __init__(
+        self, metadata: Dict[str, Any] = None, generated: List[pd.DataFrame] = None
+    ) -> None:
+        self.metadata = metadata
+        self.generated = generated
 
     def infer_metadata(self, series: pd.Series) -> Dict[str, Any]:
         raise NotImplementedError

@@ -1,12 +1,12 @@
 # stdlib
-from typing import Any, Dict, List
 import random
+from typing import Any
+from typing import Dict
+from typing import List
 
 # third party
-import pandas as pd
-
-# relative
 from creator import Creator
+import pandas as pd
 
 
 class Field:
@@ -49,8 +49,10 @@ RANDOM_METHODS_FIELD_MAP: Dict[str, ChoicesField] = {"choices": ChoicesField()}
 
 
 class RandomCreator(Creator):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(
+        self, metadata: Dict[str, Any] = None, generated: List[pd.DataFrame] = None
+    ) -> None:
+        super().__init__(metadata=metadata, generated=generated)
 
     def infer_metadata(self, series: pd.Series) -> Field:
         field_type = PANDAS_FIELD_FIELD_MAP.get(series.dtype.name, Field)
