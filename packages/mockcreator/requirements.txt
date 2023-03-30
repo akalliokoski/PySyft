@@ -1,3 +1,4 @@
-pandas
 faker
+networkx
+pandas
 pyyaml
