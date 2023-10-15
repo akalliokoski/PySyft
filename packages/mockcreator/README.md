@@ -3,9 +3,9 @@
 This subpackage provides functionality for generating mock data using the Python `faker` package, as well as inferring the metadata/schema of an existing Pandas DataFrame.
 
 ## TODO
-* refactor to generate data *field by field accross the tables*
+* refactor to use graph to generate data *field by field accross the tables*
   * required for proper multi-table support
-    * the order of fields should be determined by the relations
+  * the order of fields should be determined by the relations => graph
   * currently generated table by table
 * more features for multi-table support
   * proper fuzzy and non-matching value generation (metadata support?)
